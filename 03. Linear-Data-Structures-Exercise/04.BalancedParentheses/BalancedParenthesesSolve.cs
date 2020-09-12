@@ -34,7 +34,12 @@
                         break;
                 }
 
-                if (expectedBracket != default && openBrackets.Pop() != expectedBracket)
+                if (expectedBracket == default)
+                {
+                    continue;
+                }
+
+                if (openBrackets.Pop() != expectedBracket)
                 {
                     return false;
                 }
