@@ -3,81 +3,171 @@ namespace _01.RoyaleArena
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
 
     public class RoyaleArena : IArena
     {
+        private Dictionary<int, BattleCard> cards = new Dictionary<int, BattleCard>();
 
         public void Add(BattleCard card)
         {
-            throw new NotImplementedException();
+            if (this.Contains(card))
+            {
+                throw new InvalidOperationException();
+            }
+
+            cards[card.Id] = card;
         }
 
         public bool Contains(BattleCard card)
         {
-            throw new NotImplementedException();
+            return this.cards.ContainsKey(card.Id);
         }
 
-        public int Count { get; }
+        public int Count => this.cards.Count;
 
         public void ChangeCardType(int id, CardType type)
         {
-            throw new NotImplementedException();
+            if (this.cards.ContainsKey(id) && Enum.IsDefined(typeof(CardType), type))
+            {
+                this.cards[id].Type = type;
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public BattleCard GetById(int id)
         {
-            throw new NotImplementedException();
+            if (this.cards.ContainsKey(id))
+            {
+                return this.cards[id];
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public void RemoveById(int id)
         {
-            throw new NotImplementedException();
+            var card = this.GetById(id);
+            this.cards.Remove(card.Id);
         }
 
         public IEnumerable<BattleCard> GetByCardType(CardType type)
         {
-            throw new NotImplementedException();
+            var toReturn = this.cards.Values
+                .Where(c => c.Type == type)
+                .OrderBy(c => c.Damage)
+                .ThenBy(c => c.Id);
+
+            this.CkechifCollectionIsEmpty(toReturn);
+
+            return toReturn;
         }
 
         public IEnumerable<BattleCard> GetByTypeAndDamageRangeOrderedByDamageThenById(CardType type, int lo, int hi)
         {
-            throw new NotImplementedException();
+            var toReturn = this.cards.Values
+                .Where(c => c.Type == type)
+                .Where(c => c.Damage > lo)
+                .Where(c => c.Damage < hi)
+                .OrderByDescending(c => c.Damage)
+                .ThenBy(c => c.Id);
+
+            this.CkechifCollectionIsEmpty(toReturn);
+
+            return toReturn;
         }
 
         public IEnumerable<BattleCard> GetByCardTypeAndMaximumDamage(CardType type, double damage)
         {
-            throw new NotImplementedException();
+            var toReturn = this.cards.Values
+                .Where(c => c.Type == type)
+                .Where(c => c.Damage <= damage)
+                .OrderByDescending(c => c.Damage)
+                .ThenBy(c => c.Id);
+
+            this.CkechifCollectionIsEmpty(toReturn);
+
+            return toReturn;
         }
 
         public IEnumerable<BattleCard> GetByNameOrderedBySwagDescending(string name)
         {
-            throw new NotImplementedException();
+            var toReturn = this.cards.Values
+                .Where(c => c.Name == name)
+                .OrderByDescending(c => c.Swag)
+                .ThenBy(c => c.Id);
+
+            if (toReturn.Count() == 0)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return toReturn;
         }
 
         public IEnumerable<BattleCard> GetByNameAndSwagRange(string name, double lo, double hi)
         {
-            throw new NotImplementedException();
+            var toReturn = this.cards.Values
+                .Where(c => c.Name == name)
+                .Where(c => c.Swag >= lo)
+                .Where(c => c.Swag < hi)
+                .OrderByDescending(c => c.Swag)
+                .ThenBy(c => c.Id);
+
+            this.CkechifCollectionIsEmpty(toReturn);
+
+            return toReturn;
         }
 
         public IEnumerable<BattleCard> FindFirstLeastSwag(int n)
         {
-            throw new NotImplementedException();
+            if (n > this.Count())
+            {
+                throw new InvalidOperationException();
+            }
+
+            double minSwag = this.cards.Min(d => d.Value.Swag);
+
+            var toReturn = this.cards.Values
+                .Where(c => c.Swag >= minSwag)
+                .OrderBy(c => c.Swag)
+                .ThenBy(c => c.Id);
+
+            return toReturn.Take(n);
         }
 
         public IEnumerable<BattleCard> GetAllInSwagRange(double lo, double hi)
         {
-            throw new NotImplementedException();
+            var toReturn = this.cards.Values
+                .Where(c => c.Swag >= lo)
+                .Where(c => c.Swag <= hi)
+                .OrderBy(c => c.Swag);
+
+            return toReturn;
         }
 
 
         public IEnumerator<BattleCard> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return this.cards.Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
+        }
+
+        private void CkechifCollectionIsEmpty(IEnumerable<BattleCard> toReturn)
+        {
+            if (toReturn.Count() == 0)
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 }

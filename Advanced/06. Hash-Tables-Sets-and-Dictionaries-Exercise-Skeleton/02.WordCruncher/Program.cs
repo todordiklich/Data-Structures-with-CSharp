@@ -10,11 +10,10 @@ namespace _02.WordCruncher
         public static int attempt = 0;
         static void Main(string[] args)
         {
-            //a aa aaa aaaa
-            //aaaa
+            //a aa aaa aaaa, aaaaa
+            //aaaaa
             List<string> input = Console.ReadLine()
             .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
-            //.Split(", ")
             .Distinct()
             .OrderBy(s => s)
             .ToList();
@@ -22,7 +21,7 @@ namespace _02.WordCruncher
             string target = Console.ReadLine();
 
             FindMatch(input, target);
-            FilterResult();
+            //FilterResult();
 
             foreach (var item in dict.Values)
             {
