@@ -8,65 +8,76 @@ namespace _02.WordCruncher
     {
         public static Dictionary<int, List<string>> dict = new Dictionary<int, List<string>>();
         public static int attempt = 0;
+        public static string word = "";
         static void Main(string[] args)
         {
-            //a aa aaa aaaa, aaaaa
-            //aaaaa
+            //fi, fil, ra, rat, i, o, n, on, iltra, in, tr, tra, tion, filt, filtra
+            //infiltration
+
+            //al, la, ab, lab, bala, bal, a, b, l, or, por, tok, to, k 
+            //alabalaportokala
+
+            //a, b, ab, ba
+            //aba
+
             List<string> input = Console.ReadLine()
-            .Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Split(", ")
             .Distinct()
             .OrderBy(s => s)
             .ToList();
 
             string target = Console.ReadLine();
+            word = target;
+            dict[0] = new List<string>();
 
             FindMatch(input, target);
-            //FilterResult();
+
+            SortedSet<string> set = new SortedSet<string>();
 
             foreach (var item in dict.Values)
             {
-                if (item.Count > 0 && target == item.Aggregate((i, j) => i + j))
+                if (item.Count > 0)
+                {
+                    string str = "";
+                    foreach (var a in item)
+                    {
+                        str += a + " ";
+                    }
+                    set.Add(str);
+                    //Console.WriteLine(string.Join(" ", item));
+                }
+            }
+            foreach (var item in set)
+            {
+                string b = GenerateWord(item);
+                if (item.Length > 0 && word == b)
                 {
                     Console.WriteLine(string.Join(" ", item));
                 }
             }
         }
 
-        private static void FilterResult()
+        private static string GenerateWord(string item)
         {
-            Dictionary<int, List<string>> filteredDict = new Dictionary<int, List<string>>();
-            int index = 0;
-            foreach (var item in dict.Values)
+            string str = "";
+            foreach (var ch in item)
             {
-                filteredDict[index] = item.OrderBy(s => s).ToList();
-                index++;
-            }
-            List<int> indexes = new List<int>();
-            for (int i = 0; i < dict.Keys.Count - 1; i++)
-            {
-                if (filteredDict[i].SequenceEqual(filteredDict[i+1]))
+                if (ch != ' ')
                 {
-                    indexes.Add(i+1);
+                    str += ch;
                 }
             }
-            indexes.Reverse();
-            for (int i = 0; i < indexes.Count; i++)
-            {
-                dict.Remove(indexes[i]);
-            }
+
+            return str;
         }
 
         private static void FindMatch(List<string> input, string target)
         {
-            if (string.IsNullOrEmpty(target))
+            if (target == "")
             {
                 attempt += 1;
                 var result = new List<string>(dict[attempt - 1]);
                 dict[attempt] = result;
-                return;
-            }
-            if (input.Count == 0)
-            {
                 return;
             }
 
@@ -74,19 +85,14 @@ namespace _02.WordCruncher
             {
                 if (target.StartsWith(input[i]))
                 {
-                    if (!dict.ContainsKey(attempt))
-                    {
-                        dict[attempt] = new List<string>();
-                    }
-                    dict[attempt].Add(input[i]);
-
-                    target = target.Substring(input[i].Length);
                     string item = input[i];
-                    input.RemoveAt(i);
+                    dict[attempt].Add(item);
+                    target = target.Substring(item.Length);
+                    //input.RemoveAt(i);
 
                     FindMatch(input, target);
 
-                    input.Insert(i, item);
+                    //input.Insert(i, item);
                     dict[attempt].Remove(item);
                     target = item + target;
                 }
