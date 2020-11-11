@@ -6,97 +6,115 @@ namespace _02.WordCruncher
 {
     class Program
     {
-        public static Dictionary<int, List<string>> dict = new Dictionary<int, List<string>>();
-        public static int attempt = 0;
-        public static string word = "";
+         public static List<Node> permutations = new List<Node>();
+        public static SortedSet<string> results = new SortedSet<string>();
         static void Main(string[] args)
         {
-            //fi, fil, ra, rat, i, o, n, on, iltra, in, tr, tra, tion, filt, filtra
-            //infiltration
+            var input = Console.ReadLine().Split(", ");
+            var target = Console.ReadLine();
 
-            //al, la, ab, lab, bala, bal, a, b, l, or, por, tok, to, k 
-            //alabalaportokala
+            permutations = GeneratePermutations(input.OrderBy(s => s).ToList(), target);
 
-            //a, b, ab, ba
-            //aba
-
-            List<string> input = Console.ReadLine()
-            .Split(", ")
-            .Distinct()
-            .OrderBy(s => s)
-            .ToList();
-
-            string target = Console.ReadLine();
-            word = target;
-            dict[0] = new List<string>();
-
-            FindMatch(input, target);
-
-            SortedSet<string> set = new SortedSet<string>();
-
-            foreach (var item in dict.Values)
+            foreach (var path in GetAllPaths())
             {
-                if (item.Count > 0)
+                var result = string.Join(' ', path);
+                if (!results.Contains(result))
                 {
-                    string str = "";
-                    foreach (var a in item)
+                    results.Add(result);
+                }
+            }
+
+            foreach (var result in results)
+            {
+                Console.WriteLine(result);
+            }
+        }
+
+        private static IEnumerable<IEnumerable<string>> GetAllPaths()
+        {
+            List<string> way = new List<string>();
+
+            foreach (var key in VisitPath(permutations, new List<string>()))
+            {
+                if (key == null)
+                {
+                    yield return way;
+                    way = new List<string>();
+                }
+                else
+                {
+                    way.Add(key);
+                }
+            }
+        }
+
+        private static IEnumerable<string> VisitPath(List<Node> permutations, List<string> path)
+        {
+            if (permutations == null)
+            {
+                foreach (var pathItem in path)
+                {
+                    yield return pathItem;
+                }
+                yield return null;
+            }
+            else
+            {
+                foreach (var node in permutations)
+                {
+                    path.Add(node.Key);
+                    foreach (var item in VisitPath(node.Value, path))
                     {
-                        str += a + " ";
+                        yield return item;
                     }
-                    set.Add(str);
-                    //Console.WriteLine(string.Join(" ", item));
-                }
-            }
-            foreach (var item in set)
-            {
-                string b = GenerateWord(item);
-                if (item.Length > 0 && word == b)
-                {
-                    Console.WriteLine(string.Join(" ", item));
+
+                    path.RemoveAt(path.Count - 1);
                 }
             }
         }
 
-        private static string GenerateWord(string item)
+        private static List<Node> GeneratePermutations(List<string> input, string target)
         {
-            string str = "";
-            foreach (var ch in item)
+            if (string.IsNullOrEmpty(target) || input.Count == 0)
             {
-                if (ch != ' ')
-                {
-                    str += ch;
-                }
+                return null;
             }
 
-            return str;
-        }
-
-        private static void FindMatch(List<string> input, string target)
-        {
-            if (target == "")
-            {
-                attempt += 1;
-                var result = new List<string>(dict[attempt - 1]);
-                dict[attempt] = result;
-                return;
-            }
+            List<Node> returnValues = null;
 
             for (int i = 0; i < input.Count; i++)
             {
-                if (target.StartsWith(input[i]))
+                var key = input[i];
+
+                if (target.StartsWith(key))
                 {
-                    string item = input[i];
-                    dict[attempt].Add(item);
-                    target = target.Substring(item.Length);
-                    //input.RemoveAt(i);
+                    var node = new Node()
+                    {
+                        Key = key,
+                        Value = GeneratePermutations(input.Where((s, index) => index != i).ToList(), target.Substring(key.Length))
+                    };
 
-                    FindMatch(input, target);
+                    if (node.Value == null && node.Key != target)
+                    {
+                        continue;
+                    }
 
-                    //input.Insert(i, item);
-                    dict[attempt].Remove(item);
-                    target = item + target;
+                    if (returnValues == null)
+                    {
+                        returnValues = new List<Node>();
+                    }
+
+                    returnValues.Add(node);
                 }
             }
+
+            return returnValues;
         }
+    }
+
+    internal class Node
+    {
+        public string Key { get; set; }
+        public List<Node> Value { get; set; }
     }
 }
